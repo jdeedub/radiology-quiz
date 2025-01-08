@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case of the Month Radiology Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+
+        header {
+            background-color: #343a40;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1, h2 {
+            color: #343a40;
+        }
+
+        form {
+            margin-top: 2rem;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #343a40;
+            color: #fff;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="page1" style="display: block;">
+        <header>
+            <h1>Welcome to the Case of the Month Radiology Quiz</h1>
+        </header>
+
+        <div class="container">
+            <h2>Login</h2>
+            <form id="login-form">
+                <label for="name">Name:</label><br>
+                <input type="text" id="name" name="name" required><br><br>
+
+                <label for="user-id">User ID:</label><br>
+                <input type="text" id="user-id" name="user-id" required><br><br>
+
+                <button type="submit">Start Quiz</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="page2" style="display: none;">
+        <header>
+            <h1>Case of the Month: Radiology Quiz</h1>
+        </header>
+
+        <div class="container">
+            <h2>Review the Case</h2>
+            <p>Patient Presentation: A 45-year-old male with a history of chronic cough and recent weight loss. Review the CT image below and provide your answer within 5 minutes.</p>
+            <img src="path-to-image.jpg" alt="Radiology case image" style="max-width: 100%; height: auto; border-radius: 8px;">
+
+            <form id="answer-form">
+                <label for="answer">Your Answer:</label><br>
+                <input type="text" id="answer" name="answer" required><br><br>
+
+                <button type="submit">Submit Answer</button>
+            </form>
+
+            <p id="timer" style="margin-top: 1rem; font-weight: bold;">Time remaining: 5:00</p>
+        </div>
+    </div>
+
+    <div id="page3" style="display: none;">
+        <header>
+            <h1>Thank You!</h1>
+        </header>
+
+        <div class="container">
+            <p>Thank you for submitting your answer. We appreciate your participation in the Case of the Month Radiology Quiz!</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Radiology Quiz. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const loginForm = document.getElementById('login-form');
+        const answerForm = document.getElementById('answer-form');
+        const page1 = document.getElementById('page1');
+        const page2 = document.getElementById('page2');
+        const page3 = document.getElementById('page3');
+        const timerElement = document.getElementById('timer');
+
+        let timer;
+        let timeRemaining = 300; // 5 minutes in seconds
+        let currentParticipant = {};
+
+        const GOOGLE_SHEET_WEB_APP_URL = 'YOUR_GOOGLE_SHEET_WEB_APP_URL';
+
+        // Handle login form submission
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const name = document.getElementById('name').value;
+            const userId = document.getElementById('user-id').value;
+
+            currentParticipant = { name, userId, answer: '' };
+
+            page1.style.display = 'none';
+            page2.style.display = 'block';
+
+            timer = setInterval(() => {
+                timeRemaining--;
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                timerElement.textContent = `Time remaining: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timer);
+                    alert('Time is up! Please submit your answer.');
+                }
+            }, 1000);
+        });
+
+        // Handle answer form submission
+        answerForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            clearInterval(timer);
+            const answer = document.getElementById('answer').value;
+            currentParticipant.answer = answer;
+
+            // Send data to Google Sheets
+            fetch(GOOGLE_SHEET_WEB_APP_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(currentParticipant),
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log('Success:', data);
+                page2.style.display = 'none';
+                page3.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was an error submitting your answer. Please try again.');
+            });
+        });
+    </script>
+</body>
+</html>
